@@ -5,25 +5,24 @@ import ir.bank.project.base.domain.BaseEntity;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
-import java.util.List;
 import java.util.Set;
 
 @Entity
-public class Customer extends BaseEntity<Long> {
+public class Bank extends BaseEntity<Long> {
 
-    @Column(name = "full_name")
-    private String fullName;
+    @Column
+    private String name;
 
     @Column
     @OneToMany
     private Set<Account> accounts;
 
-    public String getFullName() {
-        return fullName;
+    public String getName() {
+        return name;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Set<Account> getAccounts() {
