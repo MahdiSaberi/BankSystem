@@ -5,12 +5,9 @@ import ir.bank.project.domain.Bank;
 import ir.bank.project.domain.Card;
 import ir.bank.project.domain.Customer;
 
+import java.util.Set;
+
 public interface AccountRepository extends BaseRepository<Account,Long>{
 
-    Customer getCustomer(Account account);
-
-    Card getCard(Account account);
-
-    Bank getBank(Account account);
-
+    Set<Account> customerAccounts(Customer customer);
 }

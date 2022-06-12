@@ -5,7 +5,6 @@ import ir.bank.project.base.domain.BaseEntity;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -32,5 +31,13 @@ public class Customer extends BaseEntity<Long> {
 
     public void setAccounts(Set<Account> accounts) {
         this.accounts = accounts;
+    }
+
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "fullName='" + fullName + '\'' +
+                ", accounts=" + accounts +
+                '}';
     }
 }

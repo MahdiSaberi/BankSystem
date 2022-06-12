@@ -10,7 +10,7 @@ import javax.persistence.OneToOne;
 @Entity
 public class Card extends BaseEntity<Long> {
 
-    @Column
+    @Column(name = "card_number")
     private String cardNumber;
 
     @OneToOne
@@ -31,5 +31,13 @@ public class Card extends BaseEntity<Long> {
 
     public void setAccount(Account account) {
         this.account = account;
+    }
+
+    @Override
+    public String toString() {
+        return "Card{" +
+                "cardNumber='" + cardNumber + '\'' +
+                ", account=" + account +
+                '}';
     }
 }

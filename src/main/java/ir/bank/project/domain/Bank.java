@@ -32,4 +32,12 @@ public class Bank extends BaseEntity<Long> {
     public void setAccounts(Set<Account> accounts) {
         this.accounts = accounts;
     }
+
+    @Override
+    public String toString() {
+        return "Bank{" +
+                "name='" + name + '\'' +
+                ", accounts=" + accounts +
+                '}';
+    }
 }

@@ -16,7 +16,7 @@ public class Account extends BaseEntity<Long> {
 
     @ManyToOne
     @JoinColumn(name = "bank_id")
-    private Bank bankBranch;
+    private Bank bank;
 
     public Customer getCustomer() {
         return customer;
@@ -34,11 +34,20 @@ public class Account extends BaseEntity<Long> {
         this.card = card;
     }
 
-    public Bank getBankBranch() {
-        return bankBranch;
+    public Bank getBank() {
+        return bank;
     }
 
     public void setBankBranch(Bank bankBranch) {
-        this.bankBranch = bankBranch;
+        this.bank = bankBranch;
+    }
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "customer=" + customer +
+                ", card=" + card +
+                ", bank=" + bank +
+                '}';
     }
 }
