@@ -1,22 +1,26 @@
-package ir.bank.project.domain;
+package ir.bank.domain;
 
-import ir.bank.project.base.domain.BaseEntity;
+import ir.bank.base.domain.BaseEntity;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 @Entity
 public class Account extends BaseEntity<Long> {
 
     @ManyToOne
-    @JoinColumn(name = "customer_id")
     private Customer customer;
 
     @OneToOne
     private Card card;
 
     @ManyToOne
-    @JoinColumn(name = "bank_id")
     private Bank bank;
+
+    public Account() {
+    }
 
     public Customer getCustomer() {
         return customer;
@@ -38,16 +42,7 @@ public class Account extends BaseEntity<Long> {
         return bank;
     }
 
-    public void setBankBranch(Bank bankBranch) {
-        this.bank = bankBranch;
-    }
-
-    @Override
-    public String toString() {
-        return "Account{" +
-                "customer=" + customer +
-                ", card=" + card +
-                ", bank=" + bank +
-                '}';
+    public void setBank(Bank bank) {
+        this.bank = bank;
     }
 }

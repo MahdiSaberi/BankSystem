@@ -1,4 +1,4 @@
-package ir.bank.project.util;
+package ir.bank.util;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
