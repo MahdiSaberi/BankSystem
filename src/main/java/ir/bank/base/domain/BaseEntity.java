@@ -1,5 +1,6 @@
 package ir.bank.base.domain;
 
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import java.io.Serializable;
@@ -8,7 +9,8 @@ import java.io.Serializable;
 public abstract class BaseEntity<ID extends Serializable> {
 
     @Id
-    private ID id;
+    @GeneratedValue
+    protected ID id;
 
     public BaseEntity() {
     }

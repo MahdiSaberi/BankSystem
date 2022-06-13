@@ -22,6 +22,12 @@ public class Account extends BaseEntity<Long> {
     public Account() {
     }
 
+    public Account(Customer customer, Card card, Bank bank) {
+        this.customer = customer;
+        this.card = card;
+        this.bank = bank;
+    }
+
     public Customer getCustomer() {
         return customer;
     }

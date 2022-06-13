@@ -13,6 +13,9 @@ public class Bank extends BaseEntity<Long> {
 
     @Column
     private String name;
+    
+    @Column
+    private String boss;
 
     @OneToMany
     @JoinColumn(name = "bank_id")
@@ -21,12 +24,25 @@ public class Bank extends BaseEntity<Long> {
     public Bank() {
     }
 
+    public Bank(String name,Long id) {
+        this.name = name;
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getBoss() {
+        return boss;
+    }
+
+    public void setBoss(String boss) {
+        this.boss = boss;
     }
 
     public List<Account> getAccount() {

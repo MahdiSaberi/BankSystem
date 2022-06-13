@@ -2,6 +2,8 @@ package ir.bank.base.repository.impl;
 
 import ir.bank.base.domain.BaseEntity;
 import ir.bank.base.repository.BaseRepository;
+import ir.bank.domain.Bank;
+import ir.bank.domain.Customer;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -88,5 +90,6 @@ public abstract class BaseRepositoryImpl<ID extends Serializable, T extends Base
 
     public abstract Class<T> getClassType();
 
+    //public abstract Customer findByFirstName(String firstName);
 }
 

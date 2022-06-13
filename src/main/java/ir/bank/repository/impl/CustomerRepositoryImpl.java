@@ -22,7 +22,7 @@ public class CustomerRepositoryImpl extends BaseRepositoryImpl<Long, Customer> i
         return Customer.class;
     }
 
-    @Override
+
     public Customer findByFirstName(String firstName) {
         EntityManager em = emf.createEntityManager();
         Query query = em.createQuery("from Customer where firstName=:firstName", Customer.class);
@@ -30,4 +30,11 @@ public class CustomerRepositoryImpl extends BaseRepositoryImpl<Long, Customer> i
         Customer customer = (Customer) query.getSingleResult();
         return customer;
     }
+
+    public Customer findByAccountId(Long id){
+        Customer customer = new Customer();
+        return null;
+    }
+
+
 }
