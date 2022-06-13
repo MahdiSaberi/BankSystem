@@ -23,6 +23,12 @@ public class Customer extends BaseEntity<Long> {
     public Customer() {
     }
 
+    public Customer(String firstName, String lastName,Long id) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.id = id;
+    }
+
     public String getFirstName() {
         return firstName;
     }

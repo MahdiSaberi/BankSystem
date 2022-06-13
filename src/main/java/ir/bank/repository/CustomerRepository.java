@@ -6,4 +6,6 @@ import ir.bank.domain.Customer;
 public interface CustomerRepository extends BaseRepository<Long, Customer> {
 
     Customer findByFirstName(String username);
+
+    Customer findByAccountId(Long id);
 }
