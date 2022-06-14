@@ -7,9 +7,12 @@ import ir.bank.domain.Bank;
 import ir.bank.domain.Card;
 import ir.bank.domain.Customer;
 import ir.bank.repository.BankRepository;
+import ir.bank.repository.RecordRepository;
 import ir.bank.repository.impl.BankRepositoryImpl;
 import ir.bank.repository.impl.CustomerRepositoryImpl;
+import ir.bank.repository.impl.RecordRepositoryImpl;
 import ir.bank.util.ApplicationContext;
+import ir.bank.util.HibernateUtil;
 import ir.bank.util.Menu;
 import ir.bank.util.Operation;
 
@@ -23,8 +26,9 @@ import java.util.Scanner;
 
 public class Application {
     public static void main(String[] args) {
-        Menu menu = new Menu();
-        menu.firstMenu();
+            Operation.cardInfo();
+ //       Menu menu = new Menu();
+   //     menu.firstMenu();
     }
 
 }

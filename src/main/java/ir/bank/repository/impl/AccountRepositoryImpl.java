@@ -18,6 +18,6 @@ public class AccountRepositoryImpl extends BaseRepositoryImpl<Long, Account> imp
 
     @Override
     public Class<Account> getClassType() {
-        return null;
+        return Account.class;
     }
 }

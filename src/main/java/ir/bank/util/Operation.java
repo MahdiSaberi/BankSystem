@@ -1,16 +1,13 @@
 package ir.bank.util;
 
-import ir.bank.domain.Account;
-import ir.bank.domain.Bank;
-import ir.bank.domain.Card;
-import ir.bank.domain.Customer;
+import ir.bank.domain.*;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import java.util.List;
-import java.util.ListIterator;
+import java.time.LocalDate;
+import java.util.*;
 
 public class Operation {
 
@@ -129,11 +126,13 @@ public class Operation {
             account.setBank(bank);
 
             Card card = new Card();
+            card.setDate(LocalDate.of(2023,06,14));
             card.setCardNumber(ApplicationContext.cardRepository.generateNumber());
             System.out.println("Your Card Number is: "+card.getCardNumber());
             System.out.println("Select your password:");
             Integer password = context.getIntScanner().nextInt();
             card.setPassword(password);
+            card.setMoney(0L);
             account.setCard(card);
             ApplicationContext.cardRepository.save(card);
             ApplicationContext.accountRepository.save(account);
@@ -177,9 +176,9 @@ public class Operation {
         ApplicationContext context = new ApplicationContext();
         ApplicationContext.reloadAll();
         EntityManagerFactory emf = ApplicationContext.entityManagerFactory;
+        Menu menu = new Menu();
         EntityManager em = emf.createEntityManager();
-
-        Integer password = context.getIntScanner().nextInt();
+        Integer password = 0;
 
         System.out.println("Enter Origin Card Number:");
         Long originCard = context.getIntScanner().nextLong();
@@ -189,25 +188,207 @@ public class Operation {
             card = ApplicationContext.cardRepository.findByCardNumber(originCard);
         }
         catch (NullPointerException e){
-            System.out.println("This card was not found!");
+            System.out.println("Card was not found!");
+            menu.firstMenu();
         }
 
-        boolean matched = false;
-        for (int i = 0; i < 3; i++) {
-            System.out.println("Enter Password:");
-            password = context.getIntScanner().nextInt();
+    }
 
-            if(password == card.getPassword()){
-                matched = true;
+    public static Card cardInfo(){
+        ApplicationContext.reloadAll();
+        ApplicationContext context = new ApplicationContext();
+        EntityManagerFactory emf = ApplicationContext.entityManagerFactory;
+        EntityManager em = emf.createEntityManager();
+
+        System.out.println("====================");
+        System.out.println("Card Number:");
+        Long origin = context.getIntScanner().nextLong();
+        Integer password = 0;
+
+        Card card = ApplicationContext.cardRepository.findByCardNumber(origin);
+        List<Records> records = ApplicationContext.recordRepository.findByCardId(card.getId());
+
+        if(records != null) {
+            for (Records r : records) {
+
+                if (r.getMessage().equals("Your card is blocked!") &&
+                        r.getCard().getCardNumber().longValue() == card.getCardNumber().longValue()) {
+                    System.out.println("Your card is blocked!");
+                    return null;
+                }
+            }
+        }
+
+        System.out.println("Password:");
+        for (int i = 0; i < 3; i++) {
+            password = context.getIntScanner().nextInt();
+            if (password == card.getPassword())
+                return card;
+
+            System.out.println("Wrong password!");
+        }
+        em.getTransaction().begin();
+        Records record = new Records();
+        record.setMessage("Your card is blocked!");
+        record.setCard(card);
+        record.setDate(new Date());
+        ApplicationContext.recordRepository.save(record);
+        System.out.println("Done");
+        em.getTransaction().commit();
+        return null;
+    }
+
+    public static void withdrawal(){
+        ApplicationContext context = new ApplicationContext();
+        ApplicationContext.reloadAll();
+        EntityManagerFactory emf = ApplicationContext.entityManagerFactory;
+        EntityManager em = emf.createEntityManager();
+
+        Card card = cardInfo();
+
+        if (card == null){
+            Menu menu = new Menu();
+            menu.firstMenu();
+        }
+        Long money = 0L;
+
+        while(true){
+            System.out.println("====================");
+            System.out.println("Your Amount: "+card.getMoney());
+            System.out.println("Enter Money Value for Withdrawal:");
+            money = context.getIntScanner().nextLong();
+
+            if(money > card.getMoney())
+                System.out.println("Your money is not enough for Withdrawal.");
+
+            else{
+                em.getTransaction().begin();
+                Records record = new Records();
+                record.setMessage("Transaction (Withdrawal): "+card.getMoney() + "-" +money);
+                record.setCard(card);
+                record.setDate(new Date());
+                ApplicationContext.recordRepository.save(record);
+                em.getTransaction().commit();
+
+                em.getTransaction().begin();
+                card.setMoney(card.getMoney()-money);
+                ApplicationContext.cardRepository.update(card);
+                em.getTransaction().commit();
+                System.out.println("Done!");
+
                 break;
             }
-            System.out.println("Password does not match!");
-            System.out.println("Tries: "+i+1+"/3");
-            if(i+1 == 3){
+        }
+
+    }
+
+    public static void charge(){
+        Menu menu = new Menu();
+        ApplicationContext context = new ApplicationContext();
+        ApplicationContext.reloadAll();
+        EntityManagerFactory emf = ApplicationContext.entityManagerFactory;
+        EntityManager em = emf.createEntityManager();
+        Card card = cardInfo();
+
+        if (card == null)
+            menu.firstMenu();
+
+        System.out.println("Enter Amount:");
+        Long money = context.getIntScanner().nextLong();
+        em.getTransaction().begin();
+        card.setMoney(card.getMoney()+money);
+        ApplicationContext.cardRepository.update(card);
+        em.getTransaction().commit();
+        System.out.println("Your Account was Charged!");
+
+        Records record = new Records();
+        record.setMessage("Charged: "+card.getCardNumber() + "\tAmount: " + money);
+        record.setCard(card);
+        record.setDate(new Date());
+        ApplicationContext.recordRepository.save(record);
+        em.getTransaction().commit();
+    }
+
+    public static void deposit(){
+        Menu menu = new Menu();
+        ApplicationContext context = new ApplicationContext();
+        ApplicationContext.reloadAll();
+        EntityManagerFactory emf = ApplicationContext.entityManagerFactory;
+        EntityManager em = emf.createEntityManager();
+        Card oriCard = cardInfo();
+
+        if (oriCard == null)
+            menu.firstMenu();
+
+        while (true){
+            System.out.println("====================");
+            System.out.println("Enter Destination Card Number:");
+            Long destination = context.getIntScanner().nextLong();
+            Card destCard = ApplicationContext.cardRepository.findByCardNumber(destination);
+
+            if(destCard.getCardNumber() != destination)
+                System.out.println("Destination Card not found!");
+
+            else{
+                System.out.println("Enter Money to Deposit:");
+                Long money = context.getIntScanner().nextLong();
+
+                if(money > oriCard.getMoney()){
+                    System.out.println("You don't have enough Money!");
+                    menu.transactionMenu();
+                }
+
+
+                else{
+                    em.getTransaction().begin();
+                    oriCard.setMoney(oriCard.getMoney()-money);
+                    destCard.setMoney(destCard.getMoney()+money);
+                    ApplicationContext.cardRepository.update(oriCard);
+                    ApplicationContext.cardRepository.update(destCard);
+                    em.getTransaction().commit();
+                    System.out.println("Done!");
+
+                    String message = "Deposit:\n"+"Origin: "+oriCard.getCardNumber() + "\nAmount: " + money+"\nDestination: "+destCard.getCardNumber();
+
+                    Records record = new Records();
+                    record.setMessage(message);
+                    record.setCard(oriCard);
+                    record.setDate(new Date());
+                    ApplicationContext.recordRepository.save(record);
+
+                    Records record1 = new Records();
+                    record1.setMessage(message);
+                    record1.setCard(destCard);
+                    record1.setDate(new Date());
+                    ApplicationContext.recordRepository.save(record1);
+                    em.getTransaction().commit();
+                    break;
+                }
 
             }
         }
 
+    }
 
+    public static void inquiry(){
+        Menu menu = new Menu();
+        ApplicationContext context = new ApplicationContext();
+        ApplicationContext.reloadAll();
+        EntityManagerFactory emf = ApplicationContext.entityManagerFactory;
+        EntityManager em = emf.createEntityManager();
+
+        System.out.println("====================");
+        System.out.println("Enter Card Number:");
+        Long cardNumber = context.getIntScanner().nextLong();
+
+        Card card = ApplicationContext.cardRepository.findByCardNumber(cardNumber);
+        TypedQuery<Records> query = emf.createEntityManager().createQuery(
+                "from Records ", Records.class);
+        List<Records> records = query.getResultList();
+
+        for(Records r: records){
+            if(r.getCard().getId() == card.getId())
+                System.out.println(r.getMessage()+"\nDate: "+r.getDate());
+        }
     }
 }

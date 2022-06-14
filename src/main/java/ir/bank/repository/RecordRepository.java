@@ -1,8 +1,12 @@
 package ir.bank.repository;
 
 import ir.bank.base.repository.BaseRepository;
-import ir.bank.domain.Record;
+import ir.bank.domain.Records;
 
-public interface RecordRepository  extends BaseRepository<Long, Record> {
+import java.util.List;
+
+public interface RecordRepository  extends BaseRepository<Long, Records> {
     void initRecords();
+
+    List<Records> findByCardId(Long id);
 }

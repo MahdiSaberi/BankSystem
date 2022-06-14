@@ -93,8 +93,33 @@ public class Menu {
         }
     }
 
-    public void transactionMenu(){}
-    //End First Menu
+    public void transactionMenu(){
+        System.out.println("====================");
+        System.out.println("1.Withdrawal(برداشت)\n2.Charge(شارژ)\n3.Deposit(واریز)\n4.Inquiry(استعلام)\n5.Back");
+        System.out.println("====================");
 
+        int select = context.getIntScanner().nextInt();
+        switch (select){
+            case 1:
+                Operation.withdrawal();
+                firstMenu();
+                break;
+            case 2:
+                Operation.charge();
+                firstMenu();
+                break;
+            case 3:
+                Operation.deposit();
+                firstMenu();
+                break;
+            case 4:
+                Operation.inquiry();
+                break;
+            case 5:
+                firstMenu();
+                break;
+        }
+    }
+    //End First Menu
 
 }
