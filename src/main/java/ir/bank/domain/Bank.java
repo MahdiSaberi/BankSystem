@@ -13,9 +13,10 @@ public class Bank extends BaseEntity<Long> {
 
     @Column
     private String name;
-    
+
     @Column
-    private String boss;
+    @OneToMany(mappedBy = "bank")
+    private List<Employee> employees;
 
     @OneToMany
     @JoinColumn(name = "bank_id")
@@ -37,12 +38,12 @@ public class Bank extends BaseEntity<Long> {
         this.name = name;
     }
 
-    public String getBoss() {
-        return boss;
+    public List<Employee> getEmployees() {
+        return employees;
     }
 
-    public void setBoss(String boss) {
-        this.boss = boss;
+    public void setEmployees(List<Employee> employees) {
+        this.employees = employees;
     }
 
     public List<Account> getAccount() {
