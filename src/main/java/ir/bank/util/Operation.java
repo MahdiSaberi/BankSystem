@@ -64,16 +64,25 @@ public class Operation {
 
     public static void accountList(){
         ApplicationContext.reloadAll();
+        ApplicationContext context = new ApplicationContext();
         EntityManagerFactory emf = ApplicationContext.entityManagerFactory;
+
+        customerList();
+        System.out.println("Select Customer by ID:");
+        Long customerId = context.getIntScanner().nextLong();
+        Customer customer = ApplicationContext.customerRepository.findById(customerId);
 
         TypedQuery<Account> query = emf.createEntityManager().createQuery(
                 "from Account ", Account.class);
         List<Account> accounts = query.getResultList();
 
         for (Account a : accounts){
-            System.out.println("====================");
-            System.out.println("Bank: "+a.getBank().getName()+"\nCard number: "+a.getCard().getCardNumber()
-            +"\nOwner: "+a.getCustomer().getFirstName()+" "+a.getCustomer().getLastName());
+
+            if(a.getCustomer().getId().longValue() == customerId) {
+                System.out.println("====================");
+                System.out.println("Bank: " + a.getBank().getName() + "\tCard number: " + a.getCard().getCardNumber()+
+                        "\tPassword: "+a.getCard().getPassword()+"\tExpire Date: "+a.getCard().getDate()+"\tBalance: "+a.getCard().getMoney());
+            }
         }
         System.out.println("====================");
     }
@@ -144,6 +153,92 @@ public class Operation {
         }
 
     }
+    public static Employee addEmployee(){
+        ApplicationContext context = new ApplicationContext();
+        ApplicationContext.reloadAll();
+        EntityManagerFactory emf = ApplicationContext.entityManagerFactory;
+        EntityManager em = emf.createEntityManager();
+        Employee employee = new Employee();
+
+        System.out.println("Enter Firstname:");
+        String fName = context.getStringScanner().next();
+        System.out.println("Enter Lastname:");
+        String lName = context.getStringScanner().next();
+        System.out.println("Enter Age:");
+        Integer age = context.getIntScanner().nextInt();
+        System.out.println("Select Bank by ID:");
+        bankList();
+
+        Long bankId = context.getIntScanner().nextLong();
+        Bank bank = ApplicationContext.bankRepository.findById(bankId);
+
+        System.out.println("Select Employee Degree:\n1.Ordinary\n2.Boss");
+        int selectDegree = 0;
+
+        try{
+            selectDegree = context.getIntScanner().nextInt();
+            if(selectDegree == 1)
+                employee.setBoss(false);
+            else if(selectDegree == 2)
+                employee.setBoss(true);
+
+        }catch (Exception e){
+            if(selectDegree > 2)
+            {
+                System.out.println("Try again!");
+                Operation.addEmployee();
+            }
+        }
+
+        try {
+            em.getTransaction().begin();
+            employee.setFirstName(fName);
+            employee.setLastName(lName);
+            employee.setAge(age);
+            employee.setBank(bank);
+            em.persist(employee);
+            em.getTransaction().commit();
+        }catch (Exception e){
+            System.out.println("Wrong Values!");
+            em.getTransaction().rollback();
+        }
+
+        return employee;
+    }
+
+    public static void employeeList(){
+        ApplicationContext.reloadAll();
+        EntityManagerFactory emf = ApplicationContext.entityManagerFactory;
+
+        TypedQuery<Employee> query = emf.createEntityManager().createQuery(
+                "from Employee ", Employee.class);
+        List<Employee> employees = query.getResultList();
+
+        for (Employee e : employees){
+            System.out.println("====================");
+            System.out.print("ID:"+e.getId()+" FullName: "+e.getFirstName()+" "+e.getLastName());
+            System.out.print("\tBank: "+e.getBank().getName());
+            System.out.print("\tDegree: ");
+            if(e.isBoss()) System.out.println("Boss");
+            else System.out.println("Ordinary");
+        }
+        System.out.println("====================");
+
+    }
+
+    public static void removeEmployee(){
+        ApplicationContext context = new ApplicationContext();
+        System.out.println("====================");
+        System.out.println("Select Employee by ID:");
+        employeeList();
+
+        Long empId = context.getIntScanner().nextLong();
+        Employee employee = ApplicationContext.employeeRepository.findById(empId);
+
+        ApplicationContext.employeeRepository.delete(employee);
+        System.out.println("====================");
+        System.out.println("Employee Removed!");
+    }
 
     public static void createBank(){
         ApplicationContext context = new ApplicationContext();
@@ -154,14 +249,14 @@ public class Operation {
         System.out.println("====================");
         System.out.println("Enter Bank Name:");
         String name = context.getStringScanner().next();
-        System.out.println("Enter Boss Name:");
-        String bossName = context.getStringScanner().next();
+//        System.out.println("Add Employees:");
+//        Employee employee = addEmployee();
 
         try{
             em.getTransaction().begin();
             Bank bank = new Bank();
             bank.setName(name);
-            bank.setBoss(bossName);
+//            bank.setBoss(bossName);
             ApplicationContext.bankRepository.save(bank);
             em.getTransaction().commit();
             System.out.println("Bank Successfully Added!");
@@ -202,10 +297,20 @@ public class Operation {
 
         System.out.println("====================");
         System.out.println("Card Number:");
-        Long origin = context.getIntScanner().nextLong();
+
+        Long origin = null;
         Integer password = 0;
 
-        Card card = ApplicationContext.cardRepository.findByCardNumber(origin);
+        origin = context.getIntScanner().nextLong();
+        Card card = null;
+        try {
+            card = ApplicationContext.cardRepository.findByCardNumber(origin);
+        }catch (Exception e){
+            System.out.println("====================");
+            System.out.println("Card not found!");
+            ApplicationContext.menu.transactionMenu();
+        }
+
         List<Records> records = ApplicationContext.recordRepository.findByCardId(card.getId());
 
         if(records != null) {
@@ -222,7 +327,7 @@ public class Operation {
         System.out.println("Password:");
         for (int i = 0; i < 3; i++) {
             password = context.getIntScanner().nextInt();
-            if (password == card.getPassword())
+            if (password.intValue() == card.getPassword().intValue())
                 return card;
 
             System.out.println("Wrong password!");
@@ -236,6 +341,25 @@ public class Operation {
         System.out.println("Done");
         em.getTransaction().commit();
         return null;
+    }
+
+    public static void changePassword(){
+        ApplicationContext context = new ApplicationContext();
+        Menu menu = new Menu();
+        Card card = cardInfo();
+        System.out.println("====================");
+        System.out.println("Enter new Password:");
+        Integer password = context.getIntScanner().nextInt();
+        Integer oldPassword = card.getPassword();
+        card.setPassword(password);
+        card = ApplicationContext.cardRepository.update(card);
+        Records records = new Records();
+        records.setMessage("Password Changed from "+oldPassword+" to "+password);
+        records.setDate(new Date());
+        records.setCard(card);
+        ApplicationContext.recordRepository.save(records);
+        System.out.println("Done");
+        menu.firstMenu();
     }
 
     public static void withdrawal(){
@@ -301,12 +425,14 @@ public class Operation {
         em.getTransaction().commit();
         System.out.println("Your Account was Charged!");
 
+        em.getTransaction().begin();
         Records record = new Records();
         record.setMessage("Charged: "+card.getCardNumber() + "\tAmount: " + money);
         record.setCard(card);
         record.setDate(new Date());
         ApplicationContext.recordRepository.save(record);
         em.getTransaction().commit();
+        menu.transactionMenu();
     }
 
     public static void deposit(){
@@ -326,7 +452,7 @@ public class Operation {
             Long destination = context.getIntScanner().nextLong();
             Card destCard = ApplicationContext.cardRepository.findByCardNumber(destination);
 
-            if(destCard.getCardNumber() != destination)
+            if(destCard.getCardNumber().longValue() != destination)
                 System.out.println("Destination Card not found!");
 
             else{
@@ -347,9 +473,10 @@ public class Operation {
                     ApplicationContext.cardRepository.update(destCard);
                     em.getTransaction().commit();
                     System.out.println("Done!");
+                    System.out.println("====================");
+                    String message = "Deposit:\t"+"Origin: "+oriCard.getCardNumber() + "\tAmount: " + money+"\tDestination: "+destCard.getCardNumber();
 
-                    String message = "Deposit:\n"+"Origin: "+oriCard.getCardNumber() + "\nAmount: " + money+"\nDestination: "+destCard.getCardNumber();
-
+                    em.getTransaction().begin();
                     Records record = new Records();
                     record.setMessage(message);
                     record.setCard(oriCard);
@@ -367,7 +494,7 @@ public class Operation {
 
             }
         }
-
+    menu.transactionMenu();
     }
 
     public static void inquiry(){
@@ -379,16 +506,36 @@ public class Operation {
 
         System.out.println("====================");
         System.out.println("Enter Card Number:");
-        Long cardNumber = context.getIntScanner().nextLong();
 
-        Card card = ApplicationContext.cardRepository.findByCardNumber(cardNumber);
+        Long cardNumber = null;
+        Card card = null;
+        List<Records> records = null;
+
+        try {
+            cardNumber = context.getIntScanner().nextLong();
+
+        card = ApplicationContext.cardRepository.findByCardNumber(cardNumber);
         TypedQuery<Records> query = emf.createEntityManager().createQuery(
                 "from Records ", Records.class);
-        List<Records> records = query.getResultList();
+        records = query.getResultList();
+        }catch (Exception e){
+            System.out.println("====================");
+            System.out.println("Something went Wrong!");
+            menu.transactionMenu();
+        }
 
         for(Records r: records){
-            if(r.getCard().getId() == card.getId())
-                System.out.println(r.getMessage()+"\nDate: "+r.getDate());
+            if(r.getCard().getId() == card.getId()){
+                System.out.println("====================");
+                System.out.println(r.getMessage()+"\tDate: "+r.getDate());
+            }
+            else {
+                System.out.println("====================");
+                System.out.println("No Records!");
+                break;
+            }
+
         }
+        menu.transactionMenu();
     }
 }
